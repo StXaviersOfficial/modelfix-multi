@@ -89,7 +89,7 @@ allprojects {
     apply plugin: "architectury-plugin"
     apply plugin: "maven-publish"
 
-    archivesBaseName = mod_id
+    base { archivesName = mod_id }
     version = mod_version
     group = mod_group_id
 
