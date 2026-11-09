@@ -1,0 +1,41 @@
+name: XD Build
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'git ref to build'
+        required: true
+      java:
+        description: 'java version'
+        required: false
+        default: '21'
+      build_cmd:
+        description: 'gradle command'
+        required: false
+        default: 'build'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ref
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          java-version: ${{ inputs.java }}
+          distribution: 'temurin'
+      - name: Grant execute permission
+        run: chmod +x gradlew
+      - name: Build
+        run: ./gradlew ${{ inputs.build_cmd }} --stacktrace
+      - name: Upload jar artifacts
+        if: ${{ success() || failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: jars
+          path: |
+            build/libs/*.jar
+            */build/libs/*.jar
+          if-no-files-found: error
