@@ -3,10 +3,10 @@ package net.mehvahdjukaar.modelfix;
 import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigBuilder;
 import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigSpec;
 import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigType;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +28,7 @@ public class ModelFix {
 
     public static void init(boolean fabric) {
 
-        ConfigBuilder builder = ConfigBuilder.create(ResourceLocation.fromNamespaceAndPath(MOD_ID, "client"), ConfigType.CLIENT);
+        ConfigBuilder builder = ConfigBuilder.create(Identifier.fromNamespaceAndPath(MOD_ID, "client"), ConfigType.CLIENT);
 
         builder.push("default");
         var e = builder.comment("quad expansion increment. enlarges each quad. Use to hide gaps. " +
