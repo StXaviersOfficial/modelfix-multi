@@ -4,7 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public abstract class ConfigSpec {
 
-    private static final Map<ResourceLocation, ConfigSpec> CONFIG_STORAGE = new ConcurrentHashMap<>(); //wack. multithreading mod loading
+    private static final Map<Identifier, ConfigSpec> CONFIG_STORAGE = new ConcurrentHashMap<>(); //wack. multithreading mod loading
 
     public static void addTrackedSpec(ConfigSpec spec) {
         var old = CONFIG_STORAGE.put(spec.getId(), spec);
@@ -32,11 +32,11 @@ public abstract class ConfigSpec {
     }
 
     @Nullable
-    public static ConfigSpec getConfigSpec(ResourceLocation configId) {
+    public static ConfigSpec getConfigSpec(Identifier configId) {
         return CONFIG_STORAGE.get(configId);
     }
 
-    private final ResourceLocation configId;
+    private final Identifier configId;
     private final String fileName;
     private final Component readableName;
     private final Path filePath;
@@ -44,7 +44,7 @@ public abstract class ConfigSpec {
     @Nullable
     private final Runnable changeCallback;
 
-    protected ConfigSpec(ResourceLocation id, String fileExtension, Path configDirectory, ConfigType type, @Nullable Runnable changeCallback) {
+    protected ConfigSpec(Identifier id, String fileExtension, Path configDirectory, ConfigType type, @Nullable Runnable changeCallback) {
         this.configId = id;
         this.fileName = id.getNamespace() + "-" + id.getPath() + "." + fileExtension;
         this.filePath = configDirectory.resolve(fileName);
@@ -79,7 +79,7 @@ public abstract class ConfigSpec {
         return configId.getNamespace();
     }
 
-    public ResourceLocation getId() {
+    public Identifier getId() {
         return configId;
     }
 
@@ -105,7 +105,7 @@ public abstract class ConfigSpec {
 
     @Nullable
     @Environment(EnvType.CLIENT)
-    public abstract Screen makeScreen(Screen parent, @Nullable ResourceLocation background);
+    public abstract Screen makeScreen(Screen parent, @Nullable Identifier background);
 
     //serverside method
     public abstract boolean hasConfigScreen();
