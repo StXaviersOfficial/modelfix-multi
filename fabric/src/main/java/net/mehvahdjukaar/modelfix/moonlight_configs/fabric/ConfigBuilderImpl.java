@@ -5,8 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigBuilder;
 import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigType;
 import net.mehvahdjukaar.modelfix.moonlight_configs.fabric.values.*;
-import net.minecraft.resources.ResourceLocation;
-import org.apache.http.annotation.Experimental;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
@@ -22,7 +21,7 @@ import static net.mehvahdjukaar.modelfix.moonlight_configs.ConfigSpec.getReadabl
  */
 public class ConfigBuilderImpl extends ConfigBuilder {
 
-    public static ConfigBuilder create(ResourceLocation name, ConfigType type) {
+    public static ConfigBuilder create(Identifier name, ConfigType type) {
         return new ConfigBuilderImpl(name, type);
     }
 
@@ -30,7 +29,7 @@ public class ConfigBuilderImpl extends ConfigBuilder {
 
     private final Deque<ConfigSubCategory> categoryStack = new ArrayDeque<>();
 
-    public ConfigBuilderImpl(ResourceLocation name, ConfigType type) {
+    public ConfigBuilderImpl(Identifier name, ConfigType type) {
         super(name, type);
         categoryStack.push(mainCategory);
     }
@@ -90,7 +89,6 @@ public class ConfigBuilderImpl extends ConfigBuilder {
         return config;
     }
 
-    @Experimental
     @Override
     public Supplier<Float> define(String name, float defaultValue, float min, float max) {
         var config = new FloatConfigValue(name, defaultValue, min, max);
