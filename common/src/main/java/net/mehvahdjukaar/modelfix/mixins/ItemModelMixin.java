@@ -6,7 +6,6 @@ import net.mehvahdjukaar.modelfix.PlatStuff;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.List;
@@ -16,19 +15,11 @@ public abstract class ItemModelMixin {
 
     @ModifyReturnValue(method = "createSideElements", at = @At("RETURN"))
     private static List<BlockElement> increaseSide(List<BlockElement> original) {
-        if (PlatStuff.isModStateValid()) ModelFixGeom.enlargeFaces(original);
-        return original;
-    }
-
-    /**
-     * @author MehVahdJukaar
-     * @reason fixing item models gaps
-     */
-    @Overwrite
-    private static void createOrExpandSpan(List<ItemModelGenerator.Span> listSpans, ItemModelGenerator.SpanFacing spanFacing, int pixelX, int pixelY) {
-        if (PlatStuff.isModStateValid()){
-            ModelFixGeom.createOrExpandSpan(listSpans, spanFacing, pixelX, pixelY);
+        if (PlatStuff.isModStateValid()) {
+            ModelFixGeom.enlargeFaces(original);
+            ModelFixGeom.unshrinkSideFaceUVs(original);
         }
+        return original;
     }
 
 }
