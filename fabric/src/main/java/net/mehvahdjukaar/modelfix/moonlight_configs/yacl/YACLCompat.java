@@ -16,7 +16,7 @@ import net.mehvahdjukaar.modelfix.moonlight_configs.fabric.FabricConfigSpec;
 import net.mehvahdjukaar.modelfix.moonlight_configs.fabric.values.*;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -28,7 +28,7 @@ public class YACLCompat {
         return makeScreen(parent, spec, null);
     }
 
-    public static Screen makeScreen(Screen parent, FabricConfigSpec spec, @Nullable ResourceLocation background) {
+    public static Screen makeScreen(Screen parent, FabricConfigSpec spec, @Nullable Identifier background) {
 
         spec.forceLoad();
 
