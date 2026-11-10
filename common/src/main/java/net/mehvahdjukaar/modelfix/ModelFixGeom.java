@@ -1,55 +1,71 @@
 package net.mehvahdjukaar.modelfix;
 
 import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.ItemModelGenerator;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.block.model.BlockElementFace;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3f;
 
 import java.util.List;
+import java.util.Map;
 
 import static net.mehvahdjukaar.modelfix.ModelFix.*;
 
 public class ModelFixGeom {
 
-    private static final ResourceLocation BLOCK_ATLAS = ResourceLocation.parse("textures/atlas/blocks.png");
+    private static final Identifier BLOCK_ATLAS = Identifier.parse("textures/atlas/blocks.png");
 
-    //who needs anti atlas bleeding when it doesn't occur even on mipmap 4 high render distance lol
-    //apparently on mac os it does waaa
-    public static float getShrinkRatio(ResourceLocation atlasLocation, float defaultValue, float returnValue) {
-        if (atlasLocation.equals(BLOCK_ATLAS) && defaultValue == returnValue) {
-            return (float) (defaultValue * shrinkMult.get());
+    /**
+     * 1.21.11: vanilla no longer has TextureAtlasSprite#uvShrinkRatio. The same atlas
+     * bleeding protection now lives in the TextureAtlasSprite constructor, which insets
+     * the sprite UV bounds (u0/u1/v0/v1) by {@code padding} texels. This returns the
+     * multiplier that should be applied to that padding for the given atlas:
+     * 0 on the block atlas with default (non-mac) config to remove item texture gaps,
+     * the configured ratio on mac, or -1 when nothing should be done.
+     */
+    public static float getAtlasPaddingMultiplier(Identifier atlasLocation) {
+        if (atlasLocation.equals(BLOCK_ATLAS)) {
+            return shrinkMult.get().floatValue();
         }
         return -1;
     }
 
-    public static void createOrExpandSpan(List<ItemModelGenerator.Span> listSpans, ItemModelGenerator.SpanFacing spanFacing,
-                                          int pixelX, int pixelY) {
-
-        ItemModelGenerator.Span existingSpan = null;
-        for (ItemModelGenerator.Span span : listSpans) {
-            if (span.getFacing() == spanFacing) {
-                int i = spanFacing.isHorizontal() ? pixelY : pixelX;
-                if (span.getAnchor() == i) {
-                    //skips faces with transparent pixels so we can enlarge safely
-                    if (expansion.get() != 0 && span.getMax() != (!spanFacing.isHorizontal() ? pixelY : pixelX) - 1)
-                        continue;
-                    existingSpan = span;
-                    break;
-                }
-            }
-        }
-
-
-        int length = spanFacing.isHorizontal() ? pixelX : pixelY;
-        if (existingSpan == null) {
-            int newStart = spanFacing.isHorizontal() ? pixelY : pixelX;
-            listSpans.add(new ItemModelGenerator.Span(spanFacing, length, newStart));
-        } else {
-            existingSpan.expand(length);
+    /**
+     * 1.21.11: ItemModelGenerator#createSideElements bakes a 0.1 texel UV shrink into every
+     * generated side face (u goes from x+0.1 to x+0.9, scaled by 16/textureSize). We undo the
+     * (1 - shrinkMult) portion of that shrink. A single texel face has UV span 0.8 * scale,
+     * so the baked-in shrink is exactly span / 8. Each endpoint is pushed back outwards,
+     * which also handles the inverted V axis of vertical (left/right) faces.
+     */
+    public static void unshrinkSideFaceUVs(List<BlockElement> elements) {
+        double mult = 1 - shrinkMult.get();
+        if (mult <= 0) return;
+        for (int i = 0; i < elements.size(); i++) {
+            BlockElement e = elements.get(i);
+            Map<Direction, BlockElementFace> faces = e.faces();
+            if (faces.size() != 1) continue;
+            Map.Entry<Direction, BlockElementFace> entry = faces.entrySet().iterator().next();
+            BlockElementFace face = entry.getValue();
+            BlockElementFace.UVs uv = face.uvs();
+            float du = Math.abs(uv.maxU() - uv.minU()) / 8f;
+            float dv = Math.abs(uv.maxV() - uv.minV()) / 8f;
+            du *= mult;
+            dv *= mult;
+            boolean uNormal = uv.minU() <= uv.maxU();
+            boolean vNormal = uv.minV() <= uv.maxV();
+            float nMinU = uNormal ? uv.minU() - du : uv.minU() + du;
+            float nMaxU = uNormal ? uv.maxU() + du : uv.maxU() - du;
+            float nMinV = vNormal ? uv.minV() - dv : uv.minV() + dv;
+            float nMaxV = vNormal ? uv.maxV() + dv : uv.maxV() - dv;
+            BlockElementFace.UVs newUvs = new BlockElementFace.UVs(nMinU, nMinV, nMaxU, nMaxV);
+            BlockElementFace newFace = new BlockElementFace(face.cullForDirection(), face.tintIndex(),
+                    face.texture(), newUvs, face.rotation());
+            elements.set(i, new BlockElement(e.from(), e.to(), Map.of(entry.getKey(), newFace)));
         }
     }
 
-
+    //who needs anti atlas bleeding when it doesn't occur even on mipmap 4 high render distance lol
+    //apparently on mac os it does waaa
     public static void enlargeFaces(List<BlockElement> original) {
         double inc = indent.get();
         double inc2 = expansion.get();
