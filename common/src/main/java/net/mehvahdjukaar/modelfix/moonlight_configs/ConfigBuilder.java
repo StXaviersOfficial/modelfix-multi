@@ -2,7 +2,7 @@ package net.mehvahdjukaar.modelfix.moonlight_configs;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -23,25 +23,25 @@ public abstract class ConfigBuilder {
     protected boolean usesDataBuddy = true;
 
     @ExpectPlatform
-    public static ConfigBuilder create(ResourceLocation name, ConfigType type) {
+    public static ConfigBuilder create(Identifier name, ConfigType type) {
         throw new AssertionError();
     }
 
     public static ConfigBuilder create(String modId, ConfigType type) {
-        return create(ResourceLocation.fromNamespaceAndPath(modId, type.toString().toLowerCase(Locale.ROOT)), type);
+        return create(Identifier.fromNamespaceAndPath(modId, type.toString().toLowerCase(Locale.ROOT)), type);
     }
 
-    private final ResourceLocation name;
+    private final Identifier name;
     protected final ConfigType type;
 
-    protected ConfigBuilder(ResourceLocation name, ConfigType type) {
+    protected ConfigBuilder(Identifier name, ConfigType type) {
         this.name = name;
         this.type = type;
     }
 
     public abstract ConfigSpec build();
 
-    public ResourceLocation getName() {
+    public Identifier getName() {
         return name;
     }
 
@@ -79,26 +79,26 @@ public abstract class ConfigBuilder {
     public abstract <V extends Enum<V>> Supplier<V> define(String name, V defaultValue);
 
 
-    public Supplier<ResourceLocation> define(String name, ResourceLocation defaultValue) {
-        return new ResourceLocationConfigValue(this, name, defaultValue);
+    public Supplier<Identifier> define(String name, Identifier defaultValue) {
+        return new IdentifierConfigValue(this, name, defaultValue);
     }
 
-    private static class ResourceLocationConfigValue implements Supplier<ResourceLocation> {
+    private static class IdentifierConfigValue implements Supplier<Identifier> {
 
         private final Supplier<String> inner;
-        private ResourceLocation cache;
+        private Identifier cache;
         private String oldString;
 
-        public ResourceLocationConfigValue(ConfigBuilder builder, String path, ResourceLocation defaultValue) {
-            this.inner = builder.define(path, defaultValue.toString(), s -> s != null && ResourceLocation.tryParse((String) s) != null);
+        public IdentifierConfigValue(ConfigBuilder builder, String path, Identifier defaultValue) {
+            this.inner = builder.define(path, defaultValue.toString(), s -> s != null && Identifier.tryParse((String) s) != null);
         }
 
         @Override
-        public ResourceLocation get() {
+        public Identifier get() {
             String s = inner.get();
             if (!s.equals(oldString)) cache = null;
             oldString = s;
-            if (cache == null) cache = ResourceLocation.parse(s);
+            if (cache == null) cache = Identifier.parse(s);
             return cache;
         }
     }
