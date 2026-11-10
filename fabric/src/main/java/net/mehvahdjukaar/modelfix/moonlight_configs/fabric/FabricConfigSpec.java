@@ -12,7 +12,7 @@ import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigSpec;
 import net.mehvahdjukaar.modelfix.moonlight_configs.ConfigType;
 import net.mehvahdjukaar.modelfix.moonlight_configs.yacl.YACLCompat;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.*;
@@ -33,7 +33,7 @@ public final class FabricConfigSpec extends ConfigSpec {
     private final File file;
     private boolean initialized = false;
 
-    public FabricConfigSpec(ResourceLocation name, ConfigSubCategory mainEntry, ConfigType type, Runnable changeCallback) {
+    public FabricConfigSpec(Identifier name, ConfigSubCategory mainEntry, ConfigType type, Runnable changeCallback) {
         super(name, "json", FabricLoader.getInstance().getConfigDir(), type, changeCallback);
         this.file = this.getFullPath().toFile();
         this.mainEntry = mainEntry;
@@ -102,7 +102,7 @@ public final class FabricConfigSpec extends ConfigSpec {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public Screen makeScreen(Screen parent, ResourceLocation background) {
+    public Screen makeScreen(Screen parent, Identifier background) {
         if (YACL) {
             return YACLCompat.makeScreen(parent, this, background);
         } else if (CLOTH_CONFIG) {
