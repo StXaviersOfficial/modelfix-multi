@@ -9,7 +9,6 @@ pluginManagement {
 
 include("common")
 include("fabric")
-// // include("neoforge")  // xd: fabric-only build  // xd: fabric-only build
+// include("neoforge")  // xd: fabric-only build
 
 rootProject.name = "modefix-multi"
-
